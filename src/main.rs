@@ -1,4 +1,5 @@
 use std::io;
+// use image::{io::Reader as ImageReader};
 
 fn main() {
     println!("Let's get encoding!");
@@ -12,11 +13,20 @@ fn main() {
 
     input = input.trim().to_string();
 
+    // let img = ImageReader::open("myimage.png").expect("marg").decode().expect("marg");
+
+    let input_in_binary = get_binary_str(&input);
+
+    println!("\"{}\" in binary is {}", input, input_in_binary);
+
+}
+
+fn get_binary_str(input: &String) -> String {
     let mut input_in_binary = "".to_string();
 
     for character in input.clone().into_bytes() {
         input_in_binary += &format!("0{:b}", character);
     }
-    println!("\"{}\" in binary is {}", input, input_in_binary);
 
+    input_in_binary
 }

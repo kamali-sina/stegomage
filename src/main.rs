@@ -65,3 +65,27 @@ fn encode_image(img: &mut DynamicImage, binary_message: &String) {
         i += 1;
     }
 }
+
+fn decode_image(img: &DynamicImage, message_lenght: u32) -> String {
+    let (x,y): (u32, u32) = img.dimensions();
+    let mut i = 0;
+    let mut j = 0;
+    let mut output_in_binary = "".to_string();
+
+    'main: while i < x {
+        while j < y {
+            if (i * y) + j >= message_lenght * 8 {
+                break 'main;
+            }
+
+            let pixel = img.get_pixel(i, j);
+            output_in_binary += &format!("{}", (pixel.0[0] % 2).to_string());
+
+
+            j += 1;
+        }
+        i += 1;
+    }
+
+    return output_in_binary;
+}

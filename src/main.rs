@@ -18,29 +18,11 @@ fn main() {
 
     println!("\"{}\" in binary is {}", input, input_in_binary);
 
-    let mut img = ImageReader::open("player.png").expect("marg").decode().expect("marg");
-
-    for pixel in img.pixels() {
-        if pixel.2.0[0] == 0 {
-            continue;
-        }
-        for shi in pixel.2.0 {
-            println!("{shi}");
-        }
-        break;
-    }
+    let mut img = ImageReader::open("new.png").unwrap().decode().unwrap();
     
     encode_image(&mut img, &input_in_binary);
 
-    for pixel in img.pixels() {
-        if pixel.2.0[0] == 0 {
-            continue;
-        }
-        for shi in pixel.2.0 {
-            println!("{shi}");
-        }
-        break;
-    }
+    img.save("new.png").expect("could not save image!");
 }
 
 fn get_binary_str(input: &String) -> String {
@@ -58,16 +40,24 @@ fn encode_image(img: &mut DynamicImage, binary_message: &String) {
     let mut i = 0;
     let mut j = 0;
 
-    while i < x {
+    'main: while i < x {
         while j < y {
+            let binary_index = (i * y) + j;
+            if binary_index >= u32::try_from(binary_message.len()).unwrap() {
+                break 'main;
+            }
+
             let mut pixel = img.get_pixel(i, j);
-            // if (binary_message[message_index] == "1") {
-                
-            // }
-            pixel.0[0] = 89;
-            pixel.0[1] = 89;
-            pixel.0[2] = 89;
-            pixel.0[3] = 89;
+            if binary_message.clone().into_bytes()[usize::try_from(binary_index).unwrap()] == b'1' {
+                if pixel.0[0] % 2 == 0 {
+                    pixel.0[0] += 1;
+                }
+            } else {
+                if pixel.0[0] % 2 == 1 {
+                    pixel.0[0] -= 1;
+                }
+            }
+
             img.put_pixel(i, j, pixel);
 
             j += 1;

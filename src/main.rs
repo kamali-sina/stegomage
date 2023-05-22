@@ -1,7 +1,42 @@
-use std::io;
+use std::{io, path::PathBuf};
 use image::{io::Reader as ImageReader, GenericImageView, GenericImage, DynamicImage};
+use structopt::{StructOpt};
+use colored::Colorize;
+
+#[derive(StructOpt, Debug)]
+#[structopt(name = "stegomage")]
+struct Opt {
+    /// Use this to decode an image
+    #[structopt(short, long)]
+    decode: bool,
+
+    /// Use this to encode an image
+    #[structopt(short, long)]
+    encode: bool,
+
+    /// The image to encode/decode
+    #[structopt(short, long, parse(from_os_str))]
+    image: PathBuf,
+}
 
 fn main() {
+    let opt = Opt::from_args();
+    if !(opt.decode ^ opt.encode) {
+        _error("Please provide only 'one' flag to decode or encode the image");
+        return;
+    }
+    if !opt.image.exists() {
+        _error("Please provide a valid path for the image");
+        return;
+    }
+
+    if opt.decode {
+        // TODO: handle this
+    } else if opt.encode {
+        // TODO: handle this
+    }
+    
+
     println!("Let's get encoding!");
     println!("enter the phrase that you want to embed.");
 
@@ -88,4 +123,8 @@ fn decode_image(img: &DynamicImage, message_lenght: u32) -> String {
     }
 
     return output_in_binary;
+}
+
+fn _error(msg: &str) {
+    println!("{} {}\n", "error:".red().bold(), msg);
 }

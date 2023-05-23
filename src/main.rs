@@ -3,6 +3,10 @@ use image::{io::Reader as ImageReader, GenericImageView, GenericImage, DynamicIm
 use structopt::{StructOpt};
 use colored::Colorize;
 
+const STOP_WORD: &str = "$$$$";
+
+
+
 #[derive(StructOpt, Debug)]
 #[structopt(name = "stegomage")]
 struct Opt {
@@ -76,6 +80,7 @@ fn encode(opt: &Opt) {
         .read_line(&mut input)
         .expect("AAAAAAAA");
     input = input.trim().to_string();
+    input += STOP_WORD;
 
     let input_in_binary = str_to_binary(&input);
     encode_image(&mut img, &input_in_binary);

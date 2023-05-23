@@ -31,9 +31,9 @@ fn main() {
     }
 
     if opt.decode {
-        // TODO: handle this
+        decode(&opt);
     } else if opt.encode {
-        // TODO: handle this
+        encode(&opt);
     }
     
 
@@ -49,7 +49,7 @@ fn main() {
     input = input.trim().to_string();
     println!("len of your input is {}", input.len());
 
-    let input_in_binary = get_binary_str(&input);
+    let input_in_binary = str_to_binary(&input);
 
     println!("\"{}\" in binary is {}", input, input_in_binary);
 
@@ -60,7 +60,34 @@ fn main() {
     img.save("new.png").expect("could not save image!");
 }
 
-fn get_binary_str(input: &String) -> String {
+fn decode(opt: &Opt) {
+    let img = ImageReader::open(opt.image.to_str().unwrap()).unwrap().decode().unwrap();
+    let result = decode_image(&img, 4);
+
+    println!("results: {result}");
+}
+
+fn encode(opt: &Opt) {
+    let mut img = ImageReader::open(opt.image.to_str().unwrap().to_string()).unwrap().decode().unwrap();
+    
+    println!("enter the phrase you want to embed:");
+    let mut input = String::new();
+    io::stdin()
+        .read_line(&mut input)
+        .expect("AAAAAAAA");
+    input = input.trim().to_string();
+
+    let input_in_binary = str_to_binary(&input);
+    encode_image(&mut img, &input_in_binary);
+
+    let mut saving_path =  String::from("encoded_");
+    saving_path += opt.image.file_name().unwrap().to_str().unwrap().clone();
+
+    img.save(&saving_path).expect("could not save image!");
+    println!("encoded image successfully saved as: ./ {}", saving_path);
+}
+
+fn str_to_binary(input: &String) -> String {
     let mut input_in_binary = "".to_string();
 
     for character in input.clone().into_bytes() {
@@ -68,6 +95,20 @@ fn get_binary_str(input: &String) -> String {
     }
 
     input_in_binary
+}
+
+fn binary_to_str(input: &String) -> String {
+    assert!(input.len() % 8 == 0);
+    let mut bytes: Vec<u8> = Vec::new();
+    let mut i = 0;
+
+    while i < input.len() {
+        bytes.push(u8::from_str_radix(&input[i..i+8], 2).unwrap());
+        i += 8;
+    }
+    let ascii = String::from_utf8(bytes).unwrap();
+
+    ascii
 }
 
 fn encode_image(img: &mut DynamicImage, binary_message: &String) {
@@ -122,7 +163,7 @@ fn decode_image(img: &DynamicImage, message_lenght: u32) -> String {
         i += 1;
     }
 
-    return output_in_binary;
+    return binary_to_str(&output_in_binary);
 }
 
 fn _error(msg: &str) {

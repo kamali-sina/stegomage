@@ -148,10 +148,10 @@ fn decode_image(img: &DynamicImage, message_lenght: u32) -> String {
     let mut j = 0;
     let mut output_in_binary = "".to_string();
 
-    'main: while i < x {
+    'main_loop: while i < x {
         while j < y {
             if (i * y) + j >= message_lenght * 8 {
-                break 'main;
+                break 'main_loop;
             }
 
             let pixel = img.get_pixel(i, j);

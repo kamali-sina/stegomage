@@ -84,7 +84,7 @@ fn encode(opt: &Opt) {
     saving_path += opt.image.file_name().unwrap().to_str().unwrap().clone();
 
     img.save(&saving_path).expect("could not save image!");
-    println!("encoded image successfully saved as: ./ {}", saving_path);
+    println!("encoded image successfully as: ./ {}", saving_path);
 }
 
 fn str_to_binary(input: &String) -> String {

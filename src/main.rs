@@ -1,3 +1,4 @@
+// TODO: Add key and encryption
 use std::{io, path::PathBuf, process::exit};
 use image::{io::Reader as ImageReader, GenericImageView, GenericImage, DynamicImage};
 use structopt::{StructOpt};
@@ -80,15 +81,13 @@ fn str_to_binary(input: &String) -> String {
     let mut input_in_binary = "".to_string();
 
     for character in input.clone().into_bytes() {
-        // TODO: Clean this!!!
+        // TODO: Clean this padding
         let mut temp = format!("0{:b}", character);
         let i:usize = 0;
         while i < 8 - temp.len() {
             temp = "0".to_owned() + &temp;
         }
-        if temp.len() != 8 {
-            println!("fuuuuuuuuuuu");
-        }
+
         input_in_binary += &temp;
     }
 
@@ -155,6 +154,7 @@ fn decode_image(img: &DynamicImage) -> String {
         i += 1;
     }
 
+    // TODO: Clean this padding
     let i:usize = 0;
     while i < output_in_binary.len() % 8 {
         output_in_binary += "0";

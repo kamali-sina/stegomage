@@ -1,4 +1,4 @@
-use std::{io, path::PathBuf};
+use std::{io, path::PathBuf, process::exit};
 use image::{io::Reader as ImageReader, GenericImageView, GenericImage, DynamicImage};
 use structopt::{StructOpt};
 use colored::Colorize;
@@ -27,11 +27,11 @@ fn main() {
     let opt = Opt::from_args();
     if !(opt.decode ^ opt.encode) {
         _error("Please provide only 'one' flag to decode or encode the image");
-        return;
+        exit(1);
     }
     if !opt.image.exists() {
         _error("Please provide a valid path for the image");
-        return;
+        exit(1);
     }
 
     if opt.decode {
@@ -39,34 +39,11 @@ fn main() {
     } else if opt.encode {
         encode(&opt);
     }
-    
-
-    println!("Let's get encoding!");
-    println!("enter the phrase that you want to embed.");
-
-    let mut input = String::new();
-
-    io::stdin()
-        .read_line(&mut input)
-        .expect("AAAAAAAA");
-
-    input = input.trim().to_string();
-    println!("len of your input is {}", input.len());
-
-    let input_in_binary = str_to_binary(&input);
-
-    println!("\"{}\" in binary is {}", input, input_in_binary);
-
-    let mut img = ImageReader::open("new.png").unwrap().decode().unwrap();
-    
-    encode_image(&mut img, &input_in_binary);
-
-    img.save("new.png").expect("could not save image!");
 }
 
 fn decode(opt: &Opt) {
     let img = ImageReader::open(opt.image.to_str().unwrap()).unwrap().decode().unwrap();
-    let result = decode_image(&img, 4);
+    let result = decode_image(&img);
 
     println!("results: {result}");
 }
@@ -80,6 +57,12 @@ fn encode(opt: &Opt) {
         .read_line(&mut input)
         .expect("AAAAAAAA");
     input = input.trim().to_string();
+
+    if u32::try_from(input.len() + STOP_WORD.len()).unwrap() > (img.dimensions().0 * img.dimensions().1) {
+        _error("This message is too long for this image. Use a bigger image and try again");
+        exit(1);
+    }
+    
     input += STOP_WORD;
 
     let input_in_binary = str_to_binary(&input);
@@ -102,7 +85,7 @@ fn str_to_binary(input: &String) -> String {
     input_in_binary
 }
 
-fn binary_to_str(input: &String) -> String {
+fn binary_to_bytes(input: &String) -> Vec<u8> {
     assert!(input.len() % 8 == 0);
     let mut bytes: Vec<u8> = Vec::new();
     let mut i = 0;
@@ -111,9 +94,8 @@ fn binary_to_str(input: &String) -> String {
         bytes.push(u8::from_str_radix(&input[i..i+8], 2).unwrap());
         i += 8;
     }
-    let ascii = String::from_utf8(bytes).unwrap();
 
-    ascii
+    bytes
 }
 
 fn encode_image(img: &mut DynamicImage, binary_message: &String) {
@@ -147,28 +129,31 @@ fn encode_image(img: &mut DynamicImage, binary_message: &String) {
     }
 }
 
-fn decode_image(img: &DynamicImage, message_lenght: u32) -> String {
+fn decode_image(img: &DynamicImage) -> String {
     let (x,y): (u32, u32) = img.dimensions();
     let mut i = 0;
     let mut j = 0;
     let mut output_in_binary = "".to_string();
 
-    'main_loop: while i < x {
+    while i < x {
         while j < y {
-            if (i * y) + j >= message_lenght * 8 {
-                break 'main_loop;
-            }
-
             let pixel = img.get_pixel(i, j);
             output_in_binary += &format!("{}", (pixel.0[0] % 2).to_string());
-
 
             j += 1;
         }
         i += 1;
     }
 
-    return binary_to_str(&output_in_binary);
+    let full_ascii = String::from_utf8(binary_to_bytes(&output_in_binary)).unwrap();
+    if full_ascii.find(STOP_WORD) == None {
+        _error("Could not find an embedded message in the image");
+        exit(1);
+    }
+
+    let ascii = full_ascii[..full_ascii.find(STOP_WORD).unwrap()].to_string();
+    
+    ascii
 }
 
 fn _error(msg: &str) {

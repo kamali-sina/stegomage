@@ -64,22 +64,32 @@ fn encode(opt: &Opt) {
     }
     
     input += STOP_WORD;
-
+    println!("{input}");
     let input_in_binary = str_to_binary(&input);
+    println!("{input_in_binary}");
     encode_image(&mut img, &input_in_binary);
 
     let mut saving_path =  String::from("encoded_");
     saving_path += opt.image.file_name().unwrap().to_str().unwrap().clone();
 
     img.save(&saving_path).expect("could not save image!");
-    println!("encoded image successfully as: ./ {}", saving_path);
+    println!("encoded image successfully as: ./{}", saving_path);
 }
 
 fn str_to_binary(input: &String) -> String {
     let mut input_in_binary = "".to_string();
 
     for character in input.clone().into_bytes() {
-        input_in_binary += &format!("0{:b}", character);
+        // TODO: Clean this!!!
+        let mut temp = format!("0{:b}", character);
+        let i:usize = 0;
+        while i < 8 - temp.len() {
+            temp = "0".to_owned() + &temp;
+        }
+        if temp.len() != 8 {
+            println!("fuuuuuuuuuuu");
+        }
+        input_in_binary += &temp;
     }
 
     input_in_binary
@@ -145,14 +155,21 @@ fn decode_image(img: &DynamicImage) -> String {
         i += 1;
     }
 
-    let full_ascii = String::from_utf8(binary_to_bytes(&output_in_binary)).unwrap();
-    if full_ascii.find(STOP_WORD) == None {
+    let i:usize = 0;
+    while i < output_in_binary.len() % 8 {
+        output_in_binary += "0";
+    }
+
+    let stop_word_in_binary = str_to_binary(&String::from(STOP_WORD));
+
+    if output_in_binary.find(stop_word_in_binary.as_str()) == None {
         _error("Could not find an embedded message in the image");
         exit(1);
     }
+    output_in_binary = output_in_binary[..output_in_binary.find(stop_word_in_binary.as_str()).unwrap()].to_string();
 
-    let ascii = full_ascii[..full_ascii.find(STOP_WORD).unwrap()].to_string();
-    
+    let ascii = String::from_utf8(binary_to_bytes(&output_in_binary)).unwrap();
+
     ascii
 }
 

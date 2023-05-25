@@ -5,6 +5,7 @@ edition = "2021"
 authors = ["Sina <sininoir@gmail.com>"]
 description = "A simple package that helps you steganographically embed secret messages in images!"
 readme = "README.md"
+homepage = "https://github.com/kamali-sina/stegomage"
 repository = "https://github.com/kamali-sina/stegomage"
 license = "MIT"
 keywords = ["steganography", "secrets", "embedding"]

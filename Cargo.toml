@@ -2,8 +2,19 @@
 name = "stegomage"
 version = "0.1.0"
 edition = "2021"
+authors = ["Sina <sininoir@gmail.com>"]
+description = "A simple package that helps you steganographically embed secret messages in images!"
+readme = "README.md"
+homepage = "https://github.com/kamali-sina/stegomage"
+repository = "https://github.com/kamali-sina/stegomage"
+license = "MIT"
+keywords = ["steganography", "secrets", "embedding"]
+categories = ["command-line-utilities", "embedder"]
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 image = "0.24.6"
+structopt = "0.3.26"
+colored = "2"
